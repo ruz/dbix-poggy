@@ -1,0 +1,13 @@
+use inc::Module::Install;
+
+all_from('lib/DBIx/Poggy.pm');
+readme_from_pod('lib/DBIx/Poggy.pm');
+
+requires
+    'DBI' => 0,
+    'DBD::Pg' => 0,
+    'AnyEvent' => 0,
+    'Guard' => 0,
+;
+
+WriteAll();
