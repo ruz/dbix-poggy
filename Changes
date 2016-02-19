@@ -1,0 +1,7 @@
+0.02 2016-02-19
+
+    * implement auto release of handles to the pool
+
+0.01 2016-02-18
+
+    * initial release
