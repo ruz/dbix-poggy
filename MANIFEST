@@ -16,4 +16,5 @@ MANIFEST			This list of files
 META.yml
 README
 t/00-load.t
+t/auto_release.t
 t/basics.t

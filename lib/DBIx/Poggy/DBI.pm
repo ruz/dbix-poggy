@@ -156,7 +156,11 @@ sub prepare {
     weaken $wself;
     $sth->{private_poggy_guard} = guard {
         --$state->{active};
-        return unless @{ $state->{queue} };
+        unless ( @{ $state->{queue} } ) {
+            $state->{release_to}->release($wself)
+                if $wself && $state->{release_to} && !$state->{txn};
+            return;
+        }
         unless ($wself) {
             warn "still have pending sql queries, but dbh has gone away";
             return;
@@ -189,6 +193,9 @@ sub begin_work {
     $self->SUPER::begin_work(@_)
         or return $d->reject( $self->errobj )->promise;
     $self->{private_poggy_state}{txn} = $d;
+    if ( my $pool = $self->{private_poggy_state}{release_to} ) {
+        $d->finally(sub { $pool->release( $self ) });
+    }
     return $d->promise;
 }
 
