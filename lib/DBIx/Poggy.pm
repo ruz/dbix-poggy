@@ -3,7 +3,7 @@ use warnings;
 use v5.16;
 
 package DBIx::Poggy;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
