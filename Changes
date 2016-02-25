@@ -1,3 +1,7 @@
+0.03 2016-02-25
+
+    * Promises was not listed as a dep
+
 0.02 2016-02-19
 
     * implement auto release of handles to the pool
