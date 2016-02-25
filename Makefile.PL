@@ -8,6 +8,7 @@ requires
     'DBD::Pg' => 0,
     'AnyEvent' => 0,
     'Guard' => 0,
+    'Promises' => 0,
 ;
 
 WriteAll();
