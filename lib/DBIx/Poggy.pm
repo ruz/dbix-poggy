@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use v5.16;
+use v5.14;
 
 package DBIx::Poggy;
 our $VERSION = '0.03';
