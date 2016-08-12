@@ -9,6 +9,7 @@ requires
     'AnyEvent' => 0,
     'Guard' => 0,
     'Promises' => 0,
+    'Scalar::Util' => 0,
 ;
 
 WriteAll();

@@ -25,6 +25,7 @@ requires:
   DBI: 0
   Guard: 0
   Promises: 0
+  Scalar::Util: 0
   perl: 5.14.0
 resources:
   license: http://dev.perl.org/licenses/

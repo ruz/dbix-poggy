@@ -5,6 +5,8 @@ use v5.14;
 package DBIx::Poggy;
 our $VERSION = '0.04';
 
+use Scalar::Util qw(weaken);
+
 =head1 NAME
 
 DBIx::Poggy - async Pg with AnyEvent and Promises
@@ -119,6 +121,7 @@ sub connect {
     $opts ||= {};
 
     $self->{free} ||= [];
+    $self->{list} ||= [];
 
     $self->{connection_settings} = [ $dsn, $user, $password, $opts ];
 
@@ -129,9 +132,11 @@ sub connect {
 sub _connect {
     my $self = shift;
 
-    push @{ $self->{free} }, DBIx::Poggy::DBI->connect(
+    my $dbh = DBIx::Poggy::DBI->connect(
         @{ $self->{connection_settings} }
     ) or die DBIx::Poggy::Error->new( 'DBIx::Poggy::DBI' );
+    push @{$self->{free}}, $dbh;
+    push @{$self->{list}}, $dbh;
 
     return;
 }
@@ -172,6 +177,7 @@ sub take {
     my $dbh = shift @{ $self->{free} };
     if ( $args{auto} ) {
         $dbh->{private_poggy_state}{release_to} = $self;
+        weaken $dbh->{private_poggy_state}{release_to};
         return $dbh;
     }
     return $dbh unless wantarray;
