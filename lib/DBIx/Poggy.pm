@@ -3,7 +3,7 @@ use warnings;
 use v5.14;
 
 package DBIx::Poggy;
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use Scalar::Util qw(weaken);
 

@@ -1,3 +1,7 @@
+0.05 2016-08-12
+
+    * keep handles in "auto" release mode, so they don't get destroyed
+
 0.03 2016-02-25
 
     * Promises was not listed as a dep
