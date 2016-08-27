@@ -121,7 +121,6 @@ sub connect {
     $opts ||= {};
 
     $self->{free} ||= [];
-    $self->{list} ||= [];
 
     $self->{connection_settings} = [ $dsn, $user, $password, $opts ];
 
@@ -136,7 +135,6 @@ sub _connect {
         @{ $self->{connection_settings} }
     ) or die DBIx::Poggy::Error->new( 'DBIx::Poggy::DBI' );
     push @{$self->{free}}, $dbh;
-    push @{$self->{list}}, $dbh;
 
     return;
 }

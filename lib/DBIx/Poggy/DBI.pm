@@ -23,6 +23,7 @@ use DBD::Pg qw(:async);
 use Promises qw(collect deferred);
 use Scalar::Util qw(weaken blessed);
 use Guard qw(guard);
+use Devel::GlobalDestruction;
 
 sub connected {
     my $self= shift;
@@ -156,11 +157,8 @@ sub prepare {
     weaken $wself;
     $sth->{private_poggy_guard} = guard {
         --$state->{active};
-        unless ( @{ $state->{queue} } ) {
-            $state->{release_to}->release($wself)
-                if $wself && $state->{release_to} && !$state->{txn};
-            return;
-        }
+        return unless @{ $state->{queue} };
+
         unless ($wself) {
             warn "still have pending sql queries, but dbh has gone away";
             return;
@@ -240,6 +238,22 @@ sub rollback {
 sub errobj {
     my $self = shift;
     return DBIx::Poggy::Error->new( $self );
+}
+
+my $orig;
+BEGIN { $orig = __PACKAGE__->can('DESTROY') }
+sub DESTROY {
+    my $self = shift;
+    unless (in_global_destruction) {
+        # ressurect DBH, bu pushing it back into the pool
+        # I know it's hackish, but I couldn't find good way to implement
+        # auto release that works transparently
+        my $state = $self->{private_poggy_state} || {};
+        return $state->{release_to}->release($self)
+            if $state->{release_to} && !$state->{txn};
+    }
+    return $orig->($self, @_) if $orig;
+    return;
 }
 
 package DBIx::Poggy::DBI::st;
