@@ -10,7 +10,7 @@ requires
     'Guard' => 0,
     'Promises' => 0,
     'Scalar::Util' => 0,
-    'Devel::GlobalDestruction',
+    'Devel::GlobalDestruction' => 0,
 ;
 
 WriteAll();

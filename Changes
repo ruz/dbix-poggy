@@ -1,3 +1,7 @@
+0.06 2016-08-29
+
+    * re-implement auto release using resurrection on destroy
+
 0.05 2016-08-12
 
     * keep handles in "auto" release mode, so they don't get destroyed
