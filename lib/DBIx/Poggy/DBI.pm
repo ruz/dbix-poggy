@@ -129,12 +129,19 @@ sub _do_async {
 
     my $guard;
     my $watcher = sub {
-        return unless $self->pg_ready;
+        my $ready;
+        local $@;
+        eval { $ready = $self->pg_ready; 1 } or do {
+            return $done->('reject');
+        };
+        return unless $ready;
 
         $guard = undef;
-        my $res = $self->pg_result or return $done->( 'reject' );
+        my $res = eval { $self->pg_result } or return $done->( 'reject' );
         return $done->(resolve => $res) unless $fetch_method;
-        return $done->(resolve => $sth->$fetch_method( @$fetch_args ) );
+        my @res;
+        eval { @res = $sth->$fetch_method( @$fetch_args ); 1 } or return $done->('reject');
+        return $done->( resolve => @res );
     };
     $guard = AnyEvent->io( fh => $self->{pg_socket}, poll => 'r', cb => $watcher );
     return;
