@@ -120,6 +120,7 @@ sub connect {
     my ($dsn, $user, $password, $opts) = @_;
 
     $opts ||= {};
+    $opts->{RaiseError} //= 1;
 
     $self->{free} ||= [];
 
