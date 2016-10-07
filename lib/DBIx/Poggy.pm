@@ -5,7 +5,7 @@ use v5.14;
 package DBIx::Poggy;
 our $VERSION = '0.06';
 
-use Scalar::Util qw(weaken);
+use Scalar::Util qw(weaken refaddr);
 
 =head1 NAME
 
@@ -105,6 +105,7 @@ sub new {
 sub init {
     my $self = shift;
     $self->{pool_size} ||= 10;
+    $self->{ping_on_take} ||= 30;
     return $self;
 }
 
@@ -135,6 +136,7 @@ sub _connect {
         @{ $self->{connection_settings} }
     ) or die DBIx::Poggy::Error->new( 'DBIx::Poggy::DBI' );
     push @{$self->{free}}, $dbh;
+    $self->{last_used}{ refaddr $dbh } = time;
 
     return;
 }
@@ -167,12 +169,27 @@ sub take {
             errstr => 'Attempt to take a connection from not initialized pool',
         );
     }
-    unless ( @{ $self->{free} } ) {
-        warn "DB pool exhausted, creating a new connection";
-        $self->_connect;
+    my $dbh;
+    while (1) {
+        unless ( @{ $self->{free} } ) {
+            warn "DB pool exhausted, creating a new connection";
+            $self->_connect;
+            $dbh = shift @{ $self->{free} };
+            delete $self->{last_used}{ refaddr $dbh };
+            last;
+        }
+
+        $dbh = shift @{ $self->{free} };
+        my $used = delete $self->{last_used}{ refaddr $dbh };
+        if ( ($used - time) > $self->{ping_on_take} ) {
+            unless ( $dbh->ping ) {
+                warn "connection is not alive, dropping";
+                next;
+            }
+        }
+        last;
     }
 
-    my $dbh = shift @{ $self->{free} };
     if ( $args{auto} ) {
         $dbh->{private_poggy_state}{release_to} = $self;
         weaken $dbh->{private_poggy_state}{release_to};
@@ -191,7 +208,9 @@ no protection against double putting or active queries on the handle.
 
 sub release {
     my $self = shift;
-    push @{ $self->{free} }, shift;
+    my $dbh = shift;
+    push @{ $self->{free} }, $dbh;
+    $self->{last_used}{ refaddr $dbh } = time;
     return $self;
 }
 
