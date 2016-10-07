@@ -210,6 +210,8 @@ no protection against double putting or active queries on the handle.
 sub release {
     my $self = shift;
     my $dbh = shift;
+    delete $dbh->{private_poggy_state}{release_to};
+
     push @{ $self->{free} }, $dbh;
     $self->{last_used}{ refaddr $dbh } = time;
     return $self;
