@@ -212,6 +212,11 @@ sub release {
     my $dbh = shift;
     delete $dbh->{private_poggy_state}{release_to};
 
+    if ( $dbh->err && !$dbh->ping ) {
+        warn "handle is in error state and not ping'able, not releasing to the pool";
+        return $self;
+    }
+
     push @{ $self->{free} }, $dbh;
     $self->{last_used}{ refaddr $dbh } = time;
     return $self;
