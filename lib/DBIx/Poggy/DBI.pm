@@ -113,7 +113,7 @@ sub _do_async {
             unshift @res, $self->errobj;
         }
         if ( $sth ) {
-            $sth->finish;
+            $sth->finish unless $method eq 'reject';
             $sth = undef;
         }
 
