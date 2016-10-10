@@ -182,7 +182,7 @@ sub take {
 
         $dbh = shift @{ $self->{free} };
         my $used = delete $self->{last_used}{ refaddr $dbh };
-        if ( ($used - time) > $self->{ping_on_take} ) {
+        if ( (time - $used) > $self->{ping_on_take} ) {
             unless ( $dbh->ping ) {
                 warn "connection is not alive, dropping";
                 next;
