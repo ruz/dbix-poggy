@@ -18,8 +18,6 @@ note "can not bind a reference";
     })
     ->catch(sub{
         pass "error is expected";
-        use Data::Dumper::Concise;
-        print STDERR Dumper(\@_);
     })
     ->finally($cv);
 
