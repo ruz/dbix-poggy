@@ -260,8 +260,10 @@ sub DESTROY {
         # I know it's hackish, but I couldn't find good way to implement
         # auto release that works transparently
         my $state = $self->{private_poggy_state} || {};
-        return $state->{release_to}->release($self)
-            if $state->{release_to};
+        if ( $state->{release_to} ) {
+            $self->SUPER::rollback() if delete $state->{txn};
+            return $state->{release_to}->release($self);
+        }
     }
     return $orig->($self, @_) if $orig;
     return;
