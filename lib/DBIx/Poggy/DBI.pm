@@ -110,7 +110,9 @@ sub _do_async {
         my $method = shift;
         my @res = @_;
         if ( $method eq 'reject' ) {
-            unshift @res, $self->errobj;
+            my $err = $self->errobj;
+            $err->{errstr} ||= $res[0] if @res;
+            unshift @res, $err;
         }
         if ( $sth ) {
             $sth->finish unless $method eq 'reject';
@@ -122,25 +124,25 @@ sub _do_async {
         return;
     };
 
-    $sth = $self->prepare($query, $args)
-        or return $done->( 'reject' );
-    $sth->execute( @$binds )
-        or return $done->( 'reject' );
+    $sth = eval { $self->prepare($query, $args) }
+        or return $done->( 'reject', $@ );
+    eval { $sth->execute( @$binds ) }
+        or return $done->( 'reject', Carp::longmess($@) );
 
     my $guard;
     my $watcher = sub {
         my $ready;
         local $@;
         eval { $ready = $self->pg_ready; 1 } or do {
-            return $done->('reject');
+            return $done->('reject', $@);
         };
         return unless $ready;
 
         $guard = undef;
-        my $res = eval { $self->pg_result } or return $done->( 'reject' );
+        my $res = eval { $self->pg_result } or return $done->( 'reject', $@ );
         return $done->(resolve => $res) unless $fetch_method;
         my @res;
-        eval { @res = $sth->$fetch_method( @$fetch_args ); 1 } or return $done->('reject');
+        eval { @res = $sth->$fetch_method( @$fetch_args ); 1 } or return $done->('reject', $@);
         return $done->( resolve => @res );
     };
     $guard = AnyEvent->io( fh => $self->{pg_socket}, poll => 'r', cb => $watcher );
@@ -265,5 +267,10 @@ sub DESTROY {
 
 package DBIx::Poggy::DBI::st;
 use base 'DBI::st';
+
+sub errobj {
+    my $self = shift;
+    return DBIx::Poggy::Error->new( $self );
+}
 
 1;
