@@ -259,7 +259,7 @@ sub DESTROY {
         # auto release that works transparently
         my $state = $self->{private_poggy_state} || {};
         return $state->{release_to}->release($self)
-            if $state->{release_to} && !$state->{txn};
+            if $state->{release_to};
     }
     return $orig->($self, @_) if $orig;
     return;
