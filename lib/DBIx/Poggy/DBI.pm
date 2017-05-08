@@ -200,9 +200,11 @@ sub begin_work {
     $self->SUPER::begin_work(@_)
         or return $d->reject( $self->errobj )->promise;
     $self->{private_poggy_state}{txn} = $d;
+    my $wself = $self;
     if ( my $pool = $self->{private_poggy_state}{release_to} ) {
-        $d->finally(sub { $pool->release( $self ) });
+        $d->finally(sub { $pool->release( $wself ) });
     }
+    weaken $wself;
     return $d->promise;
 }
 
