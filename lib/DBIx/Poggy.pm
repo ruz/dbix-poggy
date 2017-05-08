@@ -3,7 +3,7 @@ use warnings;
 use v5.14;
 
 package DBIx::Poggy;
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Scalar::Util qw(weaken refaddr);
 
