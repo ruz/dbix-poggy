@@ -19,3 +19,7 @@ README
 t/00-load.t
 t/auto_release.t
 t/basics.t
+t/bind_errors.t
+t/lost_connection.t
+t/timeouts.t
+t/txn_release.t
