@@ -134,6 +134,7 @@ sub _do_async {
         my $ready;
         local $@;
         eval { $ready = $self->pg_ready; 1 } or do {
+            $guard = undef;
             return $done->('reject', $@);
         };
         return unless $ready;
