@@ -1,4 +1,4 @@
-0.08
+0.08 2017-06-01
 
     * INCOMPATIBLE: handles with transactions are not released
       to the pool after commit/rollback. They behave as any other
