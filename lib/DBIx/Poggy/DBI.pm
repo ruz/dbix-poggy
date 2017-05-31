@@ -218,7 +218,10 @@ by L</begin_work>.
 
 sub commit {
     my $self = shift;
-    my $d = delete $self->{private_poggy_state}{txn} or die "No transaction in progress";
+    my $state = $self->{private_poggy_state};
+    die "Can not commit when you have active queries"
+        if $state->{active} || @{$state->{queue}};
+    my $d = delete $state->{txn} or die "No transaction in progress";
     my $rv = $self->SUPER::commit();
     unless ( $rv ) {
         $d->reject($self->errobj);
@@ -237,7 +240,10 @@ by L</begin_work>.
 
 sub rollback {
     my $self = shift;
-    my $d = delete $self->{private_poggy_state}{txn} or die "No transaction in progress";
+    my $state = $self->{private_poggy_state};
+    die "Can not commit when you have active queries"
+        if $state->{active} || @{$state->{queue}};
+    my $d = delete $state->{txn} or die "No transaction in progress";
     my $rv = $self->SUPER::rollback();
     unless ( $rv ) {
         $d->reject($self->errobj);
