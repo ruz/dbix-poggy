@@ -24,6 +24,7 @@ is scalar @{ $pool->{free} }, 3;
     $cv->recv;
     is scalar @{ $pool->{free} }, 3;
 }
+is scalar @{ $pool->{free} }, 3;
 
 {
     my $cv = AnyEvent->condvar;
@@ -33,9 +34,9 @@ is scalar @{ $pool->{free} }, 3;
     $dbh->do('DELETE FROM poggy_users')
     ->then(sub { $dbh->commit; });
     $cv->recv;
-
-    is scalar @{ $pool->{free} }, 3;
+    is scalar @{ $pool->{free} }, 2;
 }
+is scalar @{ $pool->{free} }, 3;
 
 {
     my $cv = AnyEvent->condvar;
@@ -45,9 +46,9 @@ is scalar @{ $pool->{free} }, 3;
     $dbh->do('DELETE FROM poggy_users')
     ->then(sub { $dbh->rollback; });
     $cv->recv;
-
-    is scalar @{ $pool->{free} }, 3;
+    is scalar @{ $pool->{free} }, 2;
 }
+is scalar @{ $pool->{free} }, 3;
 
 {
     my $cv = AnyEvent->condvar;
@@ -57,9 +58,10 @@ is scalar @{ $pool->{free} }, 3;
         my $p = $dbh->begin_work;
         $dbh->do('DELETE FROM poggy_users')->finally($cv);
     }
+    is scalar @{ $pool->{free} }, 2;
     $cv->recv;
-
     is scalar @{ $pool->{free} }, 3;
 }
+is scalar @{ $pool->{free} }, 3;
 
 done_testing;
